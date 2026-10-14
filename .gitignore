@@ -1,0 +1,28 @@
+# Passwords, tokens, and secrets
+.env
+.env.*
+*.env
+*.env.*
+secrets.json
+secrets.*
+**/secrets/**
+**/.secrets/**
+credentials.json
+credentials.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+id_rsa*
+id_ed25519*
+id_ecdsa*
+.npmrc
+.pypirc
+.netrc
+**/.ssh/**
+**/.aws/**
+**/.gnupg/**
+
+# Local system files
+.DS_Store

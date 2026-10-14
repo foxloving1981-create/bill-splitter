@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; form-action 'none'">
+<title>聚餐分帳器</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f5ee;color:#23382e;font-family:system-ui,-apple-system,"Microsoft JhengHei",sans-serif;line-height:1.6}main{max-width:520px;margin:60px auto;padding:30px;background:#fff;border-radius:24px;box-shadow:0 16px 60px #1834250c}h1{font-size:30px;margin:4px 0}p{margin:0 0 24px;color:#647269}.eyebrow{font-size:12px;letter-spacing:3px;color:#487459;font-weight:700}label{display:block;font-weight:650;margin:20px 0 8px}input[type=text]{width:100%;font:inherit;font-size:22px;padding:13px 16px;border:1px solid #c9d4cc;border-radius:12px;outline:none}input:focus{border-color:#307152;box-shadow:0 0 0 3px #30715220}.check{display:flex;gap:10px;align-items:center;font-weight:500}.check input{width:20px;height:20px;accent-color:#307152}button{width:100%;border:0;border-radius:12px;background:#276647;color:white;font:inherit;font-weight:700;padding:14px;cursor:pointer;margin:8px 0 22px}button:hover{background:#1b5137}.result{background:#edf5ef;border-radius:16px;padding:20px}.row{display:flex;justify-content:space-between;gap:12px;margin:10px 0;align-items:baseline}.amount{font-size:26px;font-weight:750}.note{font-size:14px;color:#52675a;margin-top:12px}.total{border-top:1px solid #cfdfd2;padding-top:12px;margin-top:14px}.error{color:#ad3628;margin-bottom:12px}footer{font-size:12px;text-align:center;color:#768079;margin-top:22px} [hidden]{display:none!important}@media(max-width:560px){main{margin:20px 12px;padding:24px}h1{font-size:28px}.amount{font-size:23px}}
+</style>
+<main>
+<div class="eyebrow">一起吃飯，輕鬆算帳</div>
+<h1>聚餐分帳器</h1>
+<p>輸入帳單金額，算出每個人要分攤多少。</p>
+<form id="form" novalidate>
+<label for="money">總金額（元）</label><input id="money" type="text" inputmode="numeric" value="1000" autocomplete="off" aria-describedby="moneyHint"><div class="note" id="moneyHint">請輸入整數金額；勾選服務費時，這裡填未含服務費的金額。</div>
+<label for="people">人數（包含付錢的人）</label><input id="people" type="text" inputmode="numeric" value="3" autocomplete="off">
+<label class="check"><input id="service" type="checkbox">加上 10% 服務費</label>
+<button type="submit">計算分帳</button>
+</form>
+<div id="error" class="error" role="alert" hidden></div>
+<section id="result" class="result" aria-live="polite" aria-atomic="true"></section>
+<footer>完全離線使用 · 不需登入 · 不儲存任何資料</footer>
+</main>
+<script>
+const money=document.getElementById('money'),people=document.getElementById('people'),service=document.getElementById('service'),result=document.getElementById('result'),error=document.getElementById('error');
+function split(amount,count,addService){const fee=addService?(amount+5n)/10n:0n;const total=amount+fee;const each=total/count;const remainder=total%count;return {fee,total,each,remainder,payer:each+remainder};}
+const fmt=n=>n.toLocaleString('zh-TW');
+function calculate(){
+ const a=money.value.trim(),b=people.value.trim();
+ if(!/^\d{1,15}$/.test(a)||!/^\d{1,9}$/.test(b)||BigInt(b)<1n){error.textContent='請輸入 0 或以上的整數金額（最多 15 位），以及 1 或以上的整數人數（最多 9 位）。';error.hidden=false;result.hidden=true;return;}
+ error.hidden=true;result.hidden=false;const count=BigInt(b),s=split(BigInt(a),count,service.checked);
+ result.innerHTML=`<div class="row"><span>付錢的人</span><strong class="amount">${fmt(s.payer)} 元</strong></div>${count>1n?`<div class="row"><span>其他 ${fmt(count-1n)} 人各</span><strong class="amount">${fmt(s.each)} 元</strong></div>`:''}<div class="note">${s.remainder>0n?`零頭 ${fmt(s.remainder)} 元，由付錢的人負擔（已包含在上方金額）。`:'沒有零頭，每個人平均分攤。'}</div>${service.checked?`<div class="note">10% 服務費：${fmt(s.fee)} 元（四捨五入至整數元）。</div>`:''}<div class="row total"><span>分攤合計${service.checked?'（含服務費）':''}</span><strong>${fmt(s.total)} 元</strong></div>`;
+}
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();calculate()});
+[money,people,service].forEach(el=>el.addEventListener('input',calculate));calculate();
+</script>
+</html>
